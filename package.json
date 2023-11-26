@@ -6,20 +6,49 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "kill": "kill -9 $(lsof -ti:3000)"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.26.2",
+    "@hookform/resolvers": "^3.3.2",
+    "@prisma/client": "^5.6.0",
+    "@radix-ui/react-avatar": "^1.0.4",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@types/node": "20.8.10",
     "@types/react": "18.2.33",
     "@types/react-dom": "18.2.14",
     "autoprefixer": "10.4.16",
+    "axios": "^1.6.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "crisp-sdk-web": "^1.0.21",
     "eslint": "8.52.0",
     "eslint-config-next": "14.0.1",
+    "lucide-react": "^0.291.0",
     "next": "14.0.1",
+    "openai": "^4.15.4",
     "postcss": "8.4.31",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.4.1",
+    "react-markdown": "^9.0.0",
+    "replicate": "^0.21.1",
+    "stripe": "^14.5.0",
+    "tailwind-merge": "^2.0.0",
     "tailwindcss": "3.3.5",
-    "typescript": "5.2.2"
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.2.2",
+    "typewriter-effect": "^2.21.0",
+    "zod": "^3.22.4",
+    "zustand": "^4.4.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.6.0"
   }
 }
