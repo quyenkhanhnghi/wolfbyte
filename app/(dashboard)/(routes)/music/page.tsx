@@ -5,17 +5,17 @@ import axios from "axios";
 import { Loader, Music } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Form, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as zod from "zod";
 
 import { useUIContext } from "@/context/UIContext";
-import { useAuth } from "@clerk/nextjs";
+// import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { formSchema } from "./formSchema";
 import { Heading } from "@/components/Heading";
 import { Empty } from "@/components/Empty";
 import { Button } from "@/components/ui/button";
-import { FormField, FormItem, FormControl } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
 export default function MusicPage() {
