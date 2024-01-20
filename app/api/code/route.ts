@@ -1,4 +1,8 @@
+/** @format */
+
 import { checkUserAPILimit, increaseAPILimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
+import { handleErrorResponse, validateUserAccess } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
@@ -12,26 +16,30 @@ export async function POST(req: NextRequest, res: NextResponse) {
   if (req.method !== "POST") {
     return;
   }
+
   try {
     const { userId } = auth();
     const body = await req.json();
     const { messages } = body;
+    const isFreeTrial = await checkUserAPILimit();
+    const isPremium = await checkSubscription();
 
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return handleErrorResponse("Unauthorized", 401);
     }
 
     if (!openai.apiKey) {
-      return new NextResponse("Missing OpenApiai key", { status: 500 });
+      return handleErrorResponse("Missing OpenApiai key", 500);
     }
+
     if (!messages) {
-      return new NextResponse("Message are required", { status: 400 });
+      return handleErrorResponse("Message are required", 400);
     }
+
     console.log(messages);
 
-    const freeTrial = checkUserAPILimit();
-    if (!freeTrial) {
-      return new NextResponse("Your free trial has expried", { status: 403 });
+    if (!isFreeTrial) {
+      return handleErrorResponse("Your free trial has expried", 403);
     }
 
     const params: OpenAI.Chat.ChatCompletionCreateParams = {
@@ -45,12 +53,17 @@ export async function POST(req: NextRequest, res: NextResponse) {
       ],
       model: "gpt-3.5-turbo",
     };
-    // const chatCompletion: OpenAI.Chat.ChatCompletion =
-    //   await openai.chat.completions.create(params);
+
     const response: OpenAI.Chat.ChatCompletion =
       await openai.chat.completions.create(params);
 
-    await increaseAPILimit();
+    console.log(response);
+
+    // Increase API limit if user is in a free trial and not a premium user
+    if (!isPremium) {
+      await increaseAPILimit();
+    }
+
     return NextResponse.json(response.choices[0].message);
   } catch (error) {
     console.log("[CODE_ERROR]", error);

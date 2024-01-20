@@ -1,7 +1,7 @@
-import { type ClassValue, clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
 import { NextResponse } from "next/server";
 import { twMerge } from "tailwind-merge";
-import { checkUserAPILimit } from "./api-limit";
+import { checkUserAPILimit, increaseAPILimit } from "./api-limit";
 import { checkSubscription } from "./subscription";
 
 export function cn(...inputs: ClassValue[]) {
@@ -16,8 +16,22 @@ export function handleErrorResponse(message: string, statusCode: number) {
   return new NextResponse(message, { status: statusCode });
 }
 
+// Function to validate the freeTrialAPI and the User Subscription
 export async function validateUserAccess() {
-  const freeTrial = await checkUserAPILimit();
-  const isUserPremium = await checkSubscription();
-  return freeTrial || isUserPremium;
+  try {
+    const [freeTrial, isUserPremium] = await Promise.all([
+      checkUserAPILimit(),
+      checkSubscription(),
+    ]);
+
+    // Increase API limit if user is in a free trial and not a premium user
+    if (freeTrial && !isUserPremium) {
+      await increaseAPILimit();
+      return true;
+    }
+
+    return isUserPremium;
+  } catch (error) {
+    console.error("An error occurred:", error);
+  }
 }

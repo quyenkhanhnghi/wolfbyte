@@ -9,7 +9,6 @@ const settingURL = pathURL("/settings");
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  // return new NextResponse("Unauthorized", { status: 401 });
   try {
     const { userId } = auth();
     const user = await currentUser();

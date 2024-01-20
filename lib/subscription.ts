@@ -11,13 +11,15 @@ export const checkSubscription = async () => {
     return false;
   }
 
-  const userSubscription = await prismadb.userSubscription.findUnique({
-    where: { userId: userId },
+  const userSubscription = await prismadb.UserSubscription.findUnique({
+    where: {
+      userId: userId,
+    },
     select: {
-      stripeCustomerId: true,
-      stripeCurrentPeriodEnd: true,
-      stripePriceid: true,
       stripeSubscriptionId: true,
+      stripeCurrentPeriodEnd: true,
+      stripeCustomerId: true,
+      stripePriceid: true,
     },
   });
 

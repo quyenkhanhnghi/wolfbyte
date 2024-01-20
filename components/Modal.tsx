@@ -1,3 +1,5 @@
+/** @format */
+
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useUIContext } from "@/context/UIContext";
 import { Button } from "@/components/ui/button";

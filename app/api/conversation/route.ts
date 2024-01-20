@@ -1,4 +1,7 @@
-import { increaseAPILimit } from "@/lib/api-limit";
+/** @format */
+
+import { checkUserAPILimit, increaseAPILimit } from "@/lib/api-limit";
+import { checkSubscription } from "@/lib/subscription";
 import { handleErrorResponse, validateUserAccess } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,45 +21,48 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const { userId } = auth();
     const body = await req.json();
     const { messages } = body;
+    const isFreeTrial = await checkUserAPILimit();
+    const isPremium = await checkSubscription();
 
     // validate input parameters, user access and API key
     if (!userId) {
-      handleErrorResponse("Unauthorized", 401);
-      // return new NextResponse("Unauthorized", { status: 401 });
+      return handleErrorResponse("Unauthorized", 401);
     }
 
     if (!openai.apiKey) {
-      handleErrorResponse("Missing OpenApiai key", 500);
-      // return new NextResponse("Missing OpenApiai key", { status: 500 });
+      return handleErrorResponse("Missing OpenApiai key", 500);
     }
     if (!messages) {
-      handleErrorResponse("Message are required", 400);
-      // return new NextResponse("Message are required", { status: 400 });
+      return handleErrorResponse("Message are required", 400);
     }
 
-    if (!(await validateUserAccess())) {
-      handleErrorResponse("Your free trial has expried", 403);
-      // return new NextResponse("Your free trial has expried", { status: 403 });
+    if (!isFreeTrial) {
+      return handleErrorResponse("Your free trial has expried", 403);
     }
-
-    console.log(messages);
 
     // API from OpenAI
     const params: OpenAI.Chat.ChatCompletionCreateParams = {
       messages: messages,
       model: "gpt-3.5-turbo",
     };
-    // const chatCompletion: OpenAI.Chat.ChatCompletion =
-    //   await openai.chat.completions.create(params);
-    const response: OpenAI.Chat.ChatCompletion =
-      await openai.chat.completions.create(params);
 
-    // If user is not a premium user then increase the API limit
-    if (!validateUserAccess) {
+    // const response: OpenAI.Chat.ChatCompletion =
+    //   await openai.chat.completions.create(params);
+
+    // Example response from OpenAI
+    const response = {
+      role: "assistant",
+      content:
+        "The radius of the Sun is approximately 696,340 kilometers (432,450 miles).",
+    };
+
+    // Increase API limit if user is in a free trial and not a premium user
+    if (!isPremium) {
       await increaseAPILimit();
     }
 
-    return NextResponse.json(response.choices[0].message);
+    return NextResponse.json(response);
+    // return NextResponse.json(response.choices[0].message);
   } catch (error) {
     console.log("[CONVERSATION_ERROR]", error);
     handleErrorResponse("Internal Server Error", 500);

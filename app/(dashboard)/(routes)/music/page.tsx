@@ -1,3 +1,5 @@
+/** @format */
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +11,6 @@ import { useForm } from "react-hook-form";
 import * as zod from "zod";
 
 import { useUIContext } from "@/context/UIContext";
-// import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { formSchema } from "./formSchema";
 import { Heading } from "@/components/Heading";
@@ -17,14 +18,14 @@ import { Empty } from "@/components/Empty";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ChatMessage } from "@/constant";
 
 export default function MusicPage() {
   const { setModalOpen, promptSuggestion, setPromptSuggestion } =
     useUIContext();
   const router = useRouter();
-  // const { userId } = useAuth();
 
-  const [music, setMusic] = useState();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,57 +34,26 @@ export default function MusicPage() {
     },
   });
 
-  // // Fetching data when the component mounts
-  // useEffect(() => {
-  //   const fetchContent = async () => {
-  //     try {
-  //       const response = await axios.get("/api/content");
-  //       setMusic(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching music content", error);
-  //     }
-  //   };
-
-  //   fetchContent();
-  // }, [userId]);
-
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
-      //   const userMessage = { role: "user", content: value.prompt };
-      //   const newMessage = [...music, userMessage];
-      setMusic(undefined);
+      const userMessage = { role: "user", content: value.prompt };
 
       const response = await axios.post("/api/music", value);
-      // const response = {
-      //   data: {
-      //     audio:
-      //       "https://replicate.delivery/pbxt/SCiO1SBkqj7gL5cTsq8AXz5pIwPajeiWbb9s17KtyQ2G3OFIA/gen_sound.wav",
-      //     spectrogram:
-      //       "https://replicate.delivery/pbxt/Xkr2iGJhHkJ3K9j5B7Xa1sSbRQmPZ7d8R17WXsalRbnjbnCE/spectrogram.jpg",
-      //   },
-      // };
+      const chatbotMessage = {
+        role: "assisstant",
+        content: response.data.audio,
+      };
 
-      // reset prompSuggetion
+      setMessages((currMessage) => [
+        ...currMessage,
+        userMessage,
+        chatbotMessage,
+      ]);
+
+      // Reset prompSuggetion and form
       setPromptSuggestion("");
-
-      console.log(response);
-
-      // save music
-      setMusic(response.data.audio);
-      // setMusic((currMessage) => [
-      //   ...currMessage,
-      //   userMessage,
-      //   response.data.audio,
-      // ]);
-
-      // Save content to backend
-      // await axios.post("/api/content", {
-      //   contentType: "MUSIC",
-      //   content: response.data.audio,
-      // });
-
       form.reset({ prompt: "" });
     } catch (error: any) {
       console.log(error);
@@ -96,6 +66,7 @@ export default function MusicPage() {
       router.refresh();
     }
   };
+
   return (
     <div>
       <Heading
@@ -140,7 +111,7 @@ export default function MusicPage() {
             </div>
           )}
 
-          {!music && !isLoading && <Empty label="No music generated." />}
+          {!messages && !isLoading && <Empty label="No music generated." />}
 
           {music && (
             <audio controls className="w-full mt-8">

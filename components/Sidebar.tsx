@@ -68,6 +68,7 @@ interface SidebarProps {
 
 function Sidebar({ userAPIUsage, isUserPremium }: SidebarProps) {
   const pathname = usePathname();
+
   return (
     <div className="space-y-4 flex flex-col h-full bg-black text-white">
       <div className="px-3 py-3 flex-1">

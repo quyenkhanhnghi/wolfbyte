@@ -1,3 +1,5 @@
+/** @format */
+
 "use client";
 import toast from "react-hot-toast";
 
@@ -17,11 +19,16 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUIContext } from "@/context/UIContext";
 import { formSchema } from "./formSchema";
+import { ChatMessage } from "@/constant";
+import { BotAvatar } from "@/components/BotAvatar";
+import { UserAvatar } from "@/components/UserAvatar";
+import { cn } from "@/lib/utils";
 
 export default function VideoPage() {
   const modal = useUIContext();
   const router = useRouter();
-  const [video, setVideo] = useState();
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,11 +41,16 @@ export default function VideoPage() {
 
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
-      setVideo(undefined);
-
+      const userMessage = { role: "user", content: value.prompt };
       const response = await axios.post("/api/video", value);
-      console.log(response);
-      setVideo(response.data[0]);
+
+      const chatbotMessage = { role: "assisstant", content: response.data[0] };
+
+      setMessages((currMessage) => [
+        ...currMessage,
+        userMessage,
+        chatbotMessage,
+      ]);
 
       form.reset();
     } catch (error: any) {
@@ -98,13 +110,31 @@ export default function VideoPage() {
             </div>
           )}
 
-          {!video && !isLoading && <Empty label="No video generated." />}
-          {video && (
-            <video className="w-full aspect-video" controls>
-              {" "}
-              <source src={video} />
-            </video>
-          )}
+          {!messages && !isLoading && <Empty label="No video generated." />}
+
+          <div className="flex flex-col-reverse gap-y-4 overflow-hidden">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "p-2 w-full flex items-start gap-x-8 rounded-lg",
+                  message.role === "user"
+                    ? "bg-muted border border-black/10"
+                    : "bg-white  border"
+                )}
+              >
+                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                {message.role === "user" ? (
+                  <p className="text-sm mt-2">{message.content}</p>
+                ) : (
+                  <video className="w-full aspect-video" controls>
+                    {" "}
+                    <source src={message.content as string} />
+                  </video>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

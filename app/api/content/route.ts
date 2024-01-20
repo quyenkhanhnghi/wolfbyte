@@ -11,27 +11,29 @@ export async function GET(req: NextRequest) {
     if (!userId) {
       return handleErrorResponse("Unauthorized", 401);
     }
+
+    console.log(userId);
     const content = await prismadb.generatedContent.findMany({
       where: { userId: userId },
     });
 
     if (!content || content.length === 0) {
-      return new NextResponse(null, {
+      return NextResponse.json(null, {
         status: 404,
         statusText: "No content found",
       });
     }
 
-    return new NextResponse(JSON.stringify(content), { status: 200 });
+    return NextResponse.json(content, { status: 200 });
   } catch (error) {
     console.log("[ERROR_FETCHING_CONTENT]", error);
-    handleErrorResponse("Internal Server Error", 500);
+    return handleErrorResponse("Internal Server Error", 500);
   }
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { contentType, content } = body;
+  const { contentType, content, isUserGenerated } = body;
   const { userId } = auth();
 
   try {
@@ -42,13 +44,14 @@ export async function POST(req: NextRequest) {
     await prismadb.generatedContent.create({
       data: {
         userId: userId,
-        content: content,
         contentType: contentType,
+        isUserGenerated: isUserGenerated,
+        content: content,
       },
     });
-    return new NextResponse("Save content successfully", { status: 200 });
+    return NextResponse.json("Save content successfully", { status: 200 });
   } catch (error) {
     console.log("[ERROR_SAVING_CONTENT]", error);
-    handleErrorResponse("Internal Server Error", 500);
+    return handleErrorResponse("Internal Server Error", 500);
   }
 }

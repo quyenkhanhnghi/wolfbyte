@@ -9,9 +9,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as zod from "zod";
 
+import { BotAvatar } from "@/components/BotAvatar";
 import { Empty } from "@/components/Empty";
 import { Heading } from "@/components/Heading";
 import { Loader } from "@/components/Loader";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -23,19 +25,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChatMessage } from "@/constant";
 import { useUIContext } from "@/context/UIContext";
-import { amountOptions, formSchema, resolutionOptions } from "./formSchema";
+import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { amountOptions, formSchema, resolutionOptions } from "./formSchema";
 
 export default function ImagePage() {
-  const modal = useUIContext();
+  const { setModalOpen, promptSuggestion, setPromptSuggestion } =
+    useUIContext();
   const router = useRouter();
-  const [images, setImages] = useState<string[]>([]);
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: "",
+      prompt: promptSuggestion || "",
       amount: "Choose amount of images to be displayed",
       resolution: "Choose resolution",
     },
@@ -45,18 +51,26 @@ export default function ImagePage() {
 
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
-      setImages([]);
+      const userMessage = { role: "user", content: value.prompt };
+
       const response = await axios.post("/api/image", value);
 
       const urls = response.data.map((image: { url: string }) => image.url);
+      const chatbotMessage = { role: "assistant", content: urls };
 
-      setImages(urls);
-      console.log(value);
+      setMessages((currMessage) => [
+        ...currMessage,
+        userMessage,
+        chatbotMessage,
+      ]);
+
+      // Reset prompSuggetion and form
+      setPromptSuggestion("");
       form.reset();
     } catch (error: any) {
       console.log(error);
       if (error?.response?.status === 403) {
-        modal.setModalOpen();
+        setModalOpen();
       } else {
         toast.error("Something went wrong. Please try again");
       }
@@ -64,6 +78,8 @@ export default function ImagePage() {
       router.refresh();
     }
   };
+
+  console.log(messages);
   return (
     <div>
       <Heading
@@ -164,26 +180,55 @@ export default function ImagePage() {
               <Loader />
             </div>
           )}
-          {images.length === 0 && !isLoading && (
+          {messages.length === 0 && !isLoading && (
             <Empty label="No images generated." />
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-8">
-            {images.map((src) => (
-              <Card key={src} className="rounded-lg overflow-hidden">
-                <div className="relative aspect-square">
-                  <Image fill alt="Generated AI" src={src} sizes="300" />
-                </div>
-                <CardFooter className="p-2">
-                  <Button
-                    onClick={() => window.open(src)}
-                    variant="secondary"
-                    className="w-full"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                </CardFooter>
-              </Card>
+          <div className="flex flex-col-reverse gap-y-4 overflow-hidden">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "p-2 w-full flex items-start gap-x-8 rounded-lg",
+                  message.role === "user"
+                    ? "bg-muted border border-black/10"
+                    : "bg-white  border"
+                )}
+              >
+                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+                {message.role === "user" ? (
+                  <p className="text-sm mt-2">{message.content}</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 m-2">
+                    {Array.isArray(message.content) &&
+                      message.content.map((image, index) => (
+                        <Card
+                          key={index}
+                          className="rounded-lg overflow-hidden"
+                        >
+                          <div className="relative aspect-square">
+                            <Image
+                              alt="Generated AI"
+                              src={image}
+                              sizes="400"
+                              width={500}
+                              height={500}
+                            />
+                          </div>
+                          <CardFooter className="p-2">
+                            <Button
+                              onClick={() => window.open(image)}
+                              variant="secondary"
+                              className="w-full"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

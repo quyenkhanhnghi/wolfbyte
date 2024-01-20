@@ -1,3 +1,5 @@
+/** @format */
+
 "use client";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -40,6 +42,7 @@ const prompts = [
 
 export function HomePromptSugesstion({}: HomePromptSugesstionProps) {
   const { setPromptSuggestion } = useUIContext();
+
   return (
     <div className="px-20">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

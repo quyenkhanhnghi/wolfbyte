@@ -21,15 +21,11 @@ import { cn } from "@/lib/utils";
 import { useUIContext } from "@/context/UIContext";
 import { formSchema } from "./formSchema";
 import { Code } from "lucide-react";
+import { ChatMessage } from "@/constant";
 
 export default function CodePage() {
   const modal = useUIContext();
   const router = useRouter();
-
-  type ChatMessage = {
-    role: string;
-    content: string;
-  };
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 

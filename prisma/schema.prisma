@@ -8,12 +8,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum contentType {
+  MUSIC
+  IMAGE
+  CODE
+  CONVERSATION
+  VIDEO
+}
+
+enum GeneratedBy {
+  user
+  assistant
+}
+
 model User {
   id String @id @default(cuid())
   email String @unique
-  // name String?
-  // userApiLimit UserApiLimit? 
-  // userSubscription UserSubscription?
+  name String?
+  apiLimit UserApiLimit?
+  subscription UserSubscription?
   generatedContents GeneratedContent[]
 }
 
@@ -23,7 +36,7 @@ model UserApiLimit {
   count Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model UserSubscription {
@@ -33,22 +46,16 @@ model UserSubscription {
   stripeSubscriptionId String? @unique @map(name: "stripe_subscription_id")
   stripePriceid String? @map(name: "stripe_price_id")
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
-  // user User @relation(fields: [userId], references: [id])
-}
-
-enum contentType {
-  MUSIC
-  IMAGE
-  CODE
-  CONVERSATION
-  VIDEO
+  user User @relation(fields: [userId], references: [id])
 }
 
 model GeneratedContent {
   id          String   @id @default(cuid())
   userId      String
   contentType contentType   
-  content     String   // Store the content
+  isUserGenerated  GeneratedBy 
+  content     String     // Store the content 
+  createdAt   DateTime  @default(now())
   user        User     @relation(fields: [userId], references: [id])
-  @@index([userId])  // Index for faster queries based on userId
+  @@index([userId, contentType, createdAt])  //Index for faster queries based on userId
 }

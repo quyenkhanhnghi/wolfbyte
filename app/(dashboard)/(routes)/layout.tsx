@@ -2,11 +2,13 @@ import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { getUserAPIUsage } from "@/lib/api-limit";
 import { checkSubscription } from "@/lib/subscription";
+import { checkUser } from "@/lib/userAuth";
 import React from "react";
 
 const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   const userAPIUsage = await getUserAPIUsage();
   const isUserPremium = await checkSubscription();
+  const isUser = await checkUser();
 
   return (
     <div className="h-full relative">

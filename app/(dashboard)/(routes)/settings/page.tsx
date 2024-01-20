@@ -5,6 +5,7 @@ import { Settings } from "lucide-react";
 
 export default async function SettingsPage() {
   const isUserPremium = await checkSubscription();
+
   return (
     <div>
       <Heading
