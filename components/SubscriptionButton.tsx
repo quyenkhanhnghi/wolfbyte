@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import { Zap } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { set } from "zod";
 
@@ -29,12 +29,13 @@ export function SubscriptionButton({ isUserPremium }: SubscriptionButtonProps) {
   return (
     <Button
       disabled={loading}
-      variant={isUserPremium ? "default" : "premium"}
+      variant="premium"
       onClick={handleButtonClick}
       className="text-lg"
     >
       {isUserPremium ? "Manage Subscription" : "Upgrade"}
       {!isUserPremium && <Zap className="w-4 h-4 fill-white ml-2" />}
+      {isUserPremium && <Sparkles className="w-4 h-4 fill-white ml-2" />}
     </Button>
   );
 }
