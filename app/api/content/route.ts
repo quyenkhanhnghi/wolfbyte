@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return handleErrorResponse("Unauthorized", 401);
     }
-
     await prismadb.generatedContent.create({
       data: {
         userId: userId,

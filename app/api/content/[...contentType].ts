@@ -15,7 +15,6 @@ export async function GET(
       return handleErrorResponse("Unauthorized", 401);
     }
 
-    console.log(userId);
     const content = await prismadb.generatedContent.findMany({
       where: { userId: userId, contentType: contentType },
     });

@@ -5,7 +5,14 @@ export interface GeneratedContent {
   isUserGenerated: "user" | "assistant";
   createdAt: Date;
   content: string;
+  // Content: ContentMessage[];
   // user: UserType;
+}
+
+export interface ContentMessage {
+  id: string;
+  generatedContentId: string;
+  content: string;
 }
 
 // Define contentType object with explicit type annotations

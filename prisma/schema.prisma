@@ -57,6 +57,16 @@ model GeneratedContent {
   content         String      @db.Text // Store the content - type to SAVE LONG CONTENT
   createdAt       DateTime    @default(now())
   user            User        @relation(fields: [userId], references: [id])
+  // Content         Content[]
 
   @@index([userId, contentType, createdAt]) //Index for faster queries based on userId
 }
+
+// model Content {
+//   id                 String            @id @default(cuid())
+//   generatedContentId String // Foreign key
+//   generatedContent   GeneratedContent? @relation(fields: [generatedContentId], references: [id])
+//   content            String            @db.Text // Store the content - type to SAVE LONG CONT
+
+//   @@index([generatedContentId])
+// }

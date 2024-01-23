@@ -34,23 +34,23 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
 
     // API from ReplicationAI
-    // const response = await replicate.run(
-    //   "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
-    //   {
-    //     input: {
-    //       prompt_a: prompt,
-    //     },
-    //   }
-    // );
-    // console.log(response);
+    const response = await replicate.run(
+      "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
+      {
+        input: {
+          prompt_a: prompt,
+        },
+      }
+    );
+    console.log(response);
 
     // Example response from ReplicateAI
-    const response = {
-      audio:
-        "https://replicate.delivery/pbxt/ne7TjKiSYty8WqXMxR5NI8gTNf58SvSzbW79a9O4mPUb7fckA/gen_sound.wav",
-      spectrogram:
-        "https://replicate.delivery/pbxt/W4xEqvxAx1aNLttMMdiU9HpehW7HNwejWAvJ1XzEAQpc7fckA/spectrogram.jpg",
-    };
+    // const response = {
+    //   audio:
+    //     "https://replicate.delivery/pbxt/ne7TjKiSYty8WqXMxR5NI8gTNf58SvSzbW79a9O4mPUb7fckA/gen_sound.wav",
+    //   spectrogram:
+    //     "https://replicate.delivery/pbxt/W4xEqvxAx1aNLttMMdiU9HpehW7HNwejWAvJ1XzEAQpc7fckA/spectrogram.jpg",
+    // };
 
     // Increase API limit if user is in a free trial and not a premium user
     if (!isPremium) {

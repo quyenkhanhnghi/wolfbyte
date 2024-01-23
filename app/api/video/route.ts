@@ -35,20 +35,20 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
 
     // API from ReplicateAI
-    // const response = await replicate.run(
-    //   "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-    //   {
-    //     input: {
-    //       prompt: prompt,
-    //     },
-    //   }
-    // );
+    const response = await replicate.run(
+      "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+      {
+        input: {
+          prompt: prompt,
+        },
+      }
+    );
 
     // Example response from OpenAI
-    const response = [
-      "https://replicate.delivery/pbxt/YSpyBHviTwJZI1h28DcsoNOPKnC3SfImGj9nf8fPX3jfJs5IB/output-0.mp4",
-    ];
-    console.log(response);
+    // const response = [
+    //   "https://replicate.delivery/pbxt/YSpyBHviTwJZI1h28DcsoNOPKnC3SfImGj9nf8fPX3jfJs5IB/output-0.mp4",
+    // ];
+    // console.log(response);
 
     // Increase API limit if user is in a free trial and not a premium user
     if (!isPremium) {

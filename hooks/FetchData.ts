@@ -1,5 +1,5 @@
 import { ChatMessage } from "@/constant";
-import { GeneratedContent } from "@/type";
+import { ContentMessage, GeneratedContent } from "@/type";
 import axios from "axios";
 import { useEffect } from "react";
 
@@ -19,7 +19,15 @@ export const useFetchData = (
           return;
         }
 
-        console.log(response);
+        // Each GeneratedContent has an array of Content
+        // const newMessages = response.data
+        //   .map((generatedContent: GeneratedContent) => {
+        //     return generatedContent.Content.map((content: ContentMessage) => ({
+        //       role: generatedContent.isUserGenerated,
+        //       content: content.content,
+        //     }));
+        //   })
+        //   .flat();
 
         const newMessages = response.data.map((message: GeneratedContent) => {
           return {
@@ -28,6 +36,7 @@ export const useFetchData = (
           };
         });
 
+        console.log(newMessages);
         setMessages(newMessages);
       } catch (e) {
         console.log("Error fetching data from database", e);

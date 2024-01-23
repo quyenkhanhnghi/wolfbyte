@@ -72,12 +72,8 @@ export default function ImagePage() {
         chatbotMessage,
       ]);
 
-      // Save chatbot response
-      await saveMessage(
-        contentType.image,
-        generatedBy.assistant,
-        response.data.urls
-      );
+      // Save chatbot response - TODO: fix for save for string[]
+      // await saveMessage(contentType.image, generatedBy.assistant, urls);
 
       // Reset prompSuggetion and form
       setPromptSuggestion("");

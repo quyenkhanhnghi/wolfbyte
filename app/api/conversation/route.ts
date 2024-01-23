@@ -1,6 +1,6 @@
 import { checkUserAPILimit, increaseAPILimit } from "@/lib/api-limit";
 import { checkSubscription } from "@/lib/subscription";
-import { handleErrorResponse, validateUserAccess } from "@/lib/utils";
+import { handleErrorResponse } from "@/lib/utils";
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -44,23 +44,25 @@ export async function POST(req: NextRequest, res: NextResponse) {
       model: "gpt-3.5-turbo",
     };
 
-    // const response: OpenAI.Chat.ChatCompletion =
-    //   await openai.chat.completions.create(params);
+    const response: OpenAI.Chat.ChatCompletion =
+      await openai.chat.completions.create(params);
+
+    console.log(response);
 
     // Example response from OpenAI
-    const response = {
-      role: "assistant",
-      content:
-        "The radius of the Sun is approximately 696,340 kilometers (432,450 miles).",
-    };
+    // const response = {
+    //   role: "assistant",
+    //   content:
+    //     "The radius of the Sun is approximately 696,340 kilometers (432,450 miles).",
+    // };
 
     // Increase API limit if user is in a free trial and not a premium user
     if (!isPremium) {
       await increaseAPILimit();
     }
 
-    return NextResponse.json(response);
-    // return NextResponse.json(response.choices[0].message);
+    // return NextResponse.json(response);
+    return NextResponse.json(response.choices[0].message);
   } catch (error) {
     console.log("[CONVERSATION_ERROR]", error);
     handleErrorResponse("Internal Server Error", 500);
