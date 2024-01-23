@@ -1,5 +1,3 @@
-/** @format */
-
 import { checkUserAPILimit, increaseAPILimit } from "@/lib/api-limit";
 import { checkSubscription } from "@/lib/subscription";
 import { handleErrorResponse, validateUserAccess } from "@/lib/utils";
@@ -36,7 +34,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       return handleErrorResponse("Message are required", 400);
     }
 
-    if (!isFreeTrial) {
+    if (!isFreeTrial && !isPremium) {
       return handleErrorResponse("Your free trial has expried", 403);
     }
 

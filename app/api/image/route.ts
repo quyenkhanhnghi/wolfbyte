@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       return handleErrorResponse("Resolution is required", 400);
     }
 
-    if (!isFreeTrial) {
+    if (!isFreeTrial && !isPremium) {
       return handleErrorResponse("Your free trial has expried", 403);
     }
 

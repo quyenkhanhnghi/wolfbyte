@@ -1,5 +1,3 @@
-/** @format */
-
 import { auth } from "@clerk/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
@@ -32,7 +30,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
     console.log(prompt);
 
-    if (!isFreeTrial) {
+    if (!isFreeTrial && !isPremium) {
       return handleErrorResponse("Your free trial has expried", 403);
     }
 
