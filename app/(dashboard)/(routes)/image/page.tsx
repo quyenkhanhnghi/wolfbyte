@@ -27,16 +27,16 @@ import {
 } from "@/components/ui/select";
 import { ChatMessage } from "@/constant";
 import { useUIContext } from "@/context/UIContext";
-import { cn } from "@/lib/utils";
+import { cn, saveMessage } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { amountOptions, formSchema, resolutionOptions } from "./formSchema";
+import { useFetchData } from "@/hooks/FetchData";
+import { contentType, generatedBy } from "@/type";
 
 export default function ImagePage() {
   const { setModalOpen, promptSuggestion, setPromptSuggestion } =
     useUIContext();
   const router = useRouter();
-
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,12 +46,20 @@ export default function ImagePage() {
       resolution: "Choose resolution",
     },
   });
-
   const isLoading = form.formState.isSubmitting;
 
+  // State to store messages
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Fetch old messages from database
+  useFetchData(setMessages, contentType.image.toLowerCase());
+
+  // Function handle submit the input message
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
       const userMessage = { role: "user", content: value.prompt };
+
+      // Save user prompt before submitting message
+      await saveMessage(contentType.image, generatedBy.user, value.prompt);
 
       const response = await axios.post("/api/image", value);
 
@@ -63,6 +71,13 @@ export default function ImagePage() {
         userMessage,
         chatbotMessage,
       ]);
+
+      // Save chatbot response
+      await saveMessage(
+        contentType.image,
+        generatedBy.assistant,
+        response.data.urls
+      );
 
       // Reset prompSuggetion and form
       setPromptSuggestion("");
@@ -79,7 +94,6 @@ export default function ImagePage() {
     }
   };
 
-  console.log(messages);
   return (
     <div>
       <Heading
@@ -183,6 +197,7 @@ export default function ImagePage() {
           {messages.length === 0 && !isLoading && (
             <Empty label="No images generated." />
           )}
+
           <div className="flex flex-col-reverse gap-y-4 overflow-hidden">
             {messages.map((message, index) => (
               <div

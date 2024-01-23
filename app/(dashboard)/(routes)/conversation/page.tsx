@@ -1,29 +1,28 @@
-/** @format */
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as zod from "zod";
 
+import { BotAvatar } from "@/components/BotAvatar";
+import { Empty } from "@/components/Empty";
 import { Heading } from "@/components/Heading";
+import { Loader } from "@/components/Loader";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { formSchema } from "./formSchema";
-import { Empty } from "@/components/Empty";
-import { Loader } from "@/components/Loader";
-import { UserAvatar } from "@/components/UserAvatar";
-import { BotAvatar } from "@/components/BotAvatar";
-import { cn } from "@/lib/utils";
-import { useUIContext } from "@/context/UIContext";
-import toast from "react-hot-toast";
-import { GeneratedContent, contentType, generatedBy } from "@/type";
 import { ChatMessage } from "@/constant";
+import { useUIContext } from "@/context/UIContext";
+import { useFetchData } from "@/hooks/FetchData";
+import { cn, saveMessage } from "@/lib/utils";
+import { contentType, generatedBy } from "@/type";
+import toast from "react-hot-toast";
+import { formSchema } from "./formSchema";
 
 export default function ConversationPage() {
   const { setModalOpen, promptSuggestion, setPromptSuggestion } =
@@ -36,53 +35,25 @@ export default function ConversationPage() {
       prompt: promptSuggestion || "",
     },
   });
+  const isLoading = form.formState.isSubmitting;
 
   // State to store messages
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-
   // Fetch old messages from database
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/api/content");
+  useFetchData(setMessages, contentType.conversation.toLowerCase());
 
-        if (!response) {
-          return;
-        }
-
-        const newMessages = response.data.map((message: GeneratedContent) => {
-          return {
-            role: message.isUserGenerated,
-            content: message.content,
-          };
-        });
-        console.log(newMessages);
-        setMessages(newMessages);
-      } catch (e: unknown) {
-        console.log("Error fetching data from database", e);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const saveMessage = async (message: string, isUserGenerated: string) => {
-    await axios.post("/api/content", {
-      contentType: contentType.conversation,
-      isUserGenerated: isUserGenerated,
-      content: message,
-    });
-  };
-
-  const isLoading = form.formState.isSubmitting;
-
+  // Function handle submit the input message
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
       const userMessage = { role: "user", content: value.prompt };
       const newMessage = [...messages, userMessage];
 
-      // Save user prompt
-      await saveMessage(value.prompt, generatedBy.user);
+      // Save user prompt before submitting message
+      await saveMessage(
+        contentType.conversation,
+        generatedBy.user,
+        value.prompt
+      );
 
       const response = await axios.post(
         "/api/conversation",
@@ -103,11 +74,15 @@ export default function ConversationPage() {
       ]);
 
       // Save chatbot response
-      await saveMessage(response.data.content, generatedBy.assistant);
+      await saveMessage(
+        contentType.conversation,
+        generatedBy.assistant,
+        response.data.content
+      );
 
       // Reset prompSuggetion and form
       setPromptSuggestion("");
-      form.reset();
+      form.reset({ prompt: "" });
     } catch (error: any) {
       console.log(error);
       if (error?.response?.status === 403) {

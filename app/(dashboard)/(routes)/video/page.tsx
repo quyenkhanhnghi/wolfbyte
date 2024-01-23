@@ -1,5 +1,3 @@
-/** @format */
-
 "use client";
 import toast from "react-hot-toast";
 
@@ -22,29 +20,38 @@ import { formSchema } from "./formSchema";
 import { ChatMessage } from "@/constant";
 import { BotAvatar } from "@/components/BotAvatar";
 import { UserAvatar } from "@/components/UserAvatar";
-import { cn } from "@/lib/utils";
+import { cn, saveMessage } from "@/lib/utils";
+import { useFetchData } from "@/hooks/FetchData";
+import { contentType, generatedBy } from "@/type";
 
 export default function VideoPage() {
-  const modal = useUIContext();
+  const { setModalOpen, promptSuggestion, setPromptSuggestion } =
+    useUIContext();
   const router = useRouter();
-
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: "",
+      prompt: promptSuggestion || "",
     },
   });
-
   const isLoading = form.formState.isSubmitting;
+
+  // State to store messages
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Fetch old messages from database
+  useFetchData(setMessages, contentType.video.toLowerCase());
 
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     try {
       const userMessage = { role: "user", content: value.prompt };
+
+      // Save user prompt before submitting message
+      await saveMessage(contentType.video, generatedBy.user, value.prompt);
+
       const response = await axios.post("/api/video", value);
 
-      const chatbotMessage = { role: "assisstant", content: response.data[0] };
+      const chatbotMessage = { role: "assistant", content: response.data[0] };
 
       setMessages((currMessage) => [
         ...currMessage,
@@ -52,12 +59,18 @@ export default function VideoPage() {
         chatbotMessage,
       ]);
 
+      // Save chatbot response
+      await saveMessage(
+        contentType.video,
+        generatedBy.assistant,
+        response.data[0]
+      );
+
       form.reset();
     } catch (error: any) {
-      //TODO: open pro model
       console.log(error);
       if (error?.response?.status === 403) {
-        modal.setModalOpen();
+        setModalOpen();
       } else {
         toast.error("Something went wrong. Please try again");
       }

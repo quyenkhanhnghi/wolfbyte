@@ -1,13 +1,13 @@
 "use client";
-import toast from "react-hot-toast";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import * as zod from "zod";
-import ReactMarkdown from "react-markdown";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import ReactMarkdown from "react-markdown";
+import * as zod from "zod";
 
 import { BotAvatar } from "@/components/BotAvatar";
 import { Empty } from "@/components/Empty";
@@ -17,32 +17,41 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useUIContext } from "@/context/UIContext";
-import { formSchema } from "./formSchema";
-import { Code } from "lucide-react";
 import { ChatMessage } from "@/constant";
+import { useUIContext } from "@/context/UIContext";
+import { useFetchData } from "@/hooks/FetchData";
+import { cn, saveMessage } from "@/lib/utils";
+import { contentType, generatedBy } from "@/type";
+import { Code } from "lucide-react";
+import { formSchema } from "./formSchema";
 
 export default function CodePage() {
-  const modal = useUIContext();
+  const { setModalOpen, promptSuggestion, setPromptSuggestion } =
+    useUIContext();
   const router = useRouter();
-
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const form = useForm<zod.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: "",
+      prompt: promptSuggestion || "",
     },
   });
-
   const isLoading = form.formState.isSubmitting;
+
+  // State to store messages
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // Fetch old messages from database
+  useFetchData(setMessages, contentType.code.toLowerCase());
 
   const onSubmit = async (value: zod.infer<typeof formSchema>) => {
     console.log(value);
     try {
       const userMessage = { role: "user", content: value.prompt };
       const newMessage = [...messages, userMessage];
+
+      // Save user prompt before submitting message
+      await saveMessage(contentType.code, generatedBy.user, value.prompt);
+
       const response = await axios.post(
         "/api/code",
         {
@@ -54,17 +63,27 @@ export default function CodePage() {
           },
         }
       );
+
       setMessages((currMessage) => [
         ...currMessage,
         userMessage,
         response.data,
       ]);
 
+      // Save chatbot response
+      await saveMessage(
+        contentType.code,
+        generatedBy.assistant,
+        response.data.content
+      );
+
+      // Reset prompSuggetion and form
+      setPromptSuggestion("");
       form.reset();
     } catch (error: any) {
       console.log(error);
       if (error?.response?.status === 403) {
-        modal.setModalOpen();
+        setModalOpen();
       } else {
         toast.error("Something went wrong. Please try again");
       }
@@ -120,9 +139,9 @@ export default function CodePage() {
             <Empty label="No code generated." />
           )}
           <div className="flex flex-col-reverse gap-y-4">
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <div
-                key={message.content}
+                key={index}
                 className={cn(
                   "p-2 w-full flex items-start gap-x-8 rounded-lg",
                   message.role === "user"
@@ -144,7 +163,7 @@ export default function CodePage() {
                   }}
                   className="text-sm overflow-hidden leading-7"
                 >
-                  {message.content || ""}
+                  {(message.content as string) || ""}
                 </ReactMarkdown>
               </div>
             ))}
