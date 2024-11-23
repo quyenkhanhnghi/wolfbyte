@@ -19,16 +19,6 @@ export const useFetchData = (
           return;
         }
 
-        // Each GeneratedContent has an array of Content
-        // const newMessages = response.data
-        //   .map((generatedContent: GeneratedContent) => {
-        //     return generatedContent.Content.map((content: ContentMessage) => ({
-        //       role: generatedContent.isUserGenerated,
-        //       content: content.content,
-        //     }));
-        //   })
-        //   .flat();
-
         const newMessages = response.data.map((message: GeneratedContent) => {
           return {
             role: message.isUserGenerated,

@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "kill": "kill -9 $(lsof -ti:3000)"
+    "kill": "kill -9 $(lsof -ti:3000)",
+    "test": "jest"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.26.2",
@@ -50,6 +51,14 @@
     "zustand": "^4.4.6"
   },
   "devDependencies": {
-    "prisma": "^5.6.0"
+    "@testing-library/dom": "^9.3.4",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prisma": "^5.6.0",
+    "ts-node": "^10.9.2"
   }
 }

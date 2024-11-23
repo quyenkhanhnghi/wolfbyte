@@ -22,14 +22,16 @@
     "paths": {
       "@/*": ["./*"],
       "@/components": ["./components/*"]
-    }
+    },
+    "types": ["jest"]
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "home/**/*.tsx"
+    "home/**/*.tsx",
+    "__tests__/authentication.jest.ts"
   ],
   "exclude": ["node_modules"]
 }

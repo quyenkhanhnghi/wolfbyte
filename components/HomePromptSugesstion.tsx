@@ -38,7 +38,7 @@ const prompts = [
   },
 ];
 
-export function HomePromptSugesstion({}: HomePromptSugesstionProps) {
+export function HomePromptSugesstion() {
   const { setPromptSuggestion } = useUIContext();
 
   return (
